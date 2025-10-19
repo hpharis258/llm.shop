@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "XPtj5l0UqM13z2iVNUY2zjA1onGCQq1Lu7upRaKhsmE=",
+  "Source": "llm-shop-backend",
+  "BasePath": "_content/llm-shop-backend",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}

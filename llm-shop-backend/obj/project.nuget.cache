@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "EckhoNBmd38=",
+  "success": true,
+  "projectFilePath": "/Users/haroldasvaranauskas/Desktop/llm.shop/llm-shop-backend/llm-shop-backend.csproj",
+  "expectedPackageFiles": [
+    "/Users/haroldasvaranauskas/.nuget/packages/microsoft.aspnetcore.openapi/9.0.3/microsoft.aspnetcore.openapi.9.0.3.nupkg.sha512",
+    "/Users/haroldasvaranauskas/.nuget/packages/microsoft.openapi/1.6.17/microsoft.openapi.1.6.17.nupkg.sha512"
+  ],
+  "logs": []
+}
