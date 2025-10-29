@@ -28,7 +28,7 @@ const ProductGenerator: React.FC<ProductGeneratorProps> = ({ prompt, setPrompt, 
             id="product-prompt"
             rows={3}
             className="w-full p-3 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-[var(--color-primary-500)] focus:border-[var(--color-primary-500)] transition duration-150 ease-in-out text-base placeholder-slate-400 dark:placeholder-slate-500"
-            placeholder="e.g., a cup with a santa hat"
+            placeholder="e.g., a red cup with santa claus riding a skateboard..."
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             disabled={isLoading}
