@@ -1,14 +1,14 @@
 import React from 'react';
-import { CartItem, Page } from '../App';
+import { Page } from '../types';
 import { TrashIcon } from './Icons';
+import { useCart } from './contexts';
 
 interface CartPageProps {
-  cartItems: CartItem[];
-  onRemoveFromCart: (id: number) => void;
   onNavigate: (page: Page) => void;
 }
 
-const CartPage: React.FC<CartPageProps> = ({ cartItems, onRemoveFromCart, onNavigate }) => {
+const CartPage: React.FC<CartPageProps> = ({ onNavigate }) => {
+  const { cart: cartItems, removeFromCart: onRemoveFromCart } = useCart();
   const subtotal = cartItems.reduce((acc, item) => acc + parseFloat(item.price), 0);
 
   if (cartItems.length === 0) {

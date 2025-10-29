@@ -1,8 +1,7 @@
 import React from 'react';
 import { SunIcon, MoonIcon, SystemIcon } from './Icons';
-
-export type BaseTheme = 'light' | 'dark' | 'system';
-export type AccentColor = 'indigo' | 'sunset' | 'ocean';
+import { BaseTheme, AccentColor } from '../types';
+import { useTheme } from './contexts';
 
 interface AppearanceOptionProps {
   value: BaseTheme;
@@ -53,15 +52,8 @@ const AccentColorOption: React.FC<AccentColorOptionProps> = ({ value, currentCol
     );
 }
 
-
-interface SettingsPageProps {
-  baseTheme: BaseTheme;
-  setBaseTheme: (theme: BaseTheme) => void;
-  accentColor: AccentColor;
-  setAccentColor: (color: AccentColor) => void;
-}
-
-const SettingsPage: React.FC<SettingsPageProps> = ({ baseTheme, setBaseTheme, accentColor, setAccentColor }) => {
+const SettingsPage: React.FC = () => {
+  const { baseTheme, setBaseTheme, accentColor, setAccentColor } = useTheme();
   return (
     <div className="max-w-4xl mx-auto animate-fade-in space-y-12">
       <div>

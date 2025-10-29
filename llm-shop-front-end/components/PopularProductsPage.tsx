@@ -1,8 +1,10 @@
 import React from 'react';
 import ProductCard from './ProductCard';
-import { Product } from '../App';
+import { Product } from '../types';
+import { useCart } from './contexts';
 
-const popularProductsData: Product[] = [
+// Fix: Correctly type the array of objects by wrapping the type in parentheses.
+const popularProductsData: (Omit<Product, 'imageUrl'> & { description: string })[] = [
     {
         title: "Cosmic Cat Astronaut Mug",
         price: "24.99",
@@ -33,7 +35,7 @@ const popularProductsData: Product[] = [
         price: "45.75",
         description: "A yoga mat covered in a pattern of cute cartoon avocados doing yoga poses."
     }
-].map(p => ({...p, imageUrl: placeholderSvg(p.description)}));
+];
 
 
 // Generates a simple, consistent SVG placeholder to avoid external image dependencies.
@@ -41,11 +43,11 @@ function placeholderSvg(text: string) {
     return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300"><rect width="100%" height="100%" fill="%23475569" /><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="20px" fill="%23e2e8f0" text-anchor="middle">${text}</text></svg>`;
 }
 
-interface PopularProductsPageProps {
-    onAddToCart: (product: Product) => void;
-}
+const PopularProductsPage: React.FC = () => {
+    const { addToCart } = useCart();
+    
+    const products: Product[] = popularProductsData.map(p => ({...p, imageUrl: placeholderSvg(p.description)}));
 
-const PopularProductsPage: React.FC<PopularProductsPageProps> = ({ onAddToCart }) => {
     return (
         <div className="max-w-7xl mx-auto animate-fade-in">
             <h2 className="text-4xl font-extrabold text-center text-slate-900 dark:text-white mb-4">
@@ -55,11 +57,11 @@ const PopularProductsPage: React.FC<PopularProductsPageProps> = ({ onAddToCart }
                 Discover and purchase unique products imagined by our community. These are some of our all-time favorites!
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {popularProductsData.map((product) => (
+                {products.map((product) => (
                     <ProductCard
                         key={product.title}
                         product={product}
-                        onAddToCart={onAddToCart}
+                        onAddToCart={addToCart}
                     />
                 ))}
             </div>

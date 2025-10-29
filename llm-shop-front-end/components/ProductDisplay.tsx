@@ -1,6 +1,6 @@
 import React from 'react';
 import LoadingSpinner from './LoadingSpinner';
-import { Product } from '../App';
+import { Product } from '../types';
 
 interface ProductDisplayProps {
   imageUrl: string | null;

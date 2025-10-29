@@ -1,14 +1,13 @@
 import React from 'react';
-import { Page } from '../App';
+import { Page } from '../types';
 import { HeaderCartIcon } from './Icons';
+import { useAuth, useCart } from './contexts';
 
 
 interface HeaderProps {
     page: Page;
     setPage: (page: Page) => void;
-    isLoggedIn: boolean;
     onLogout: () => void;
-    cartItemCount: number;
 }
 
 const NavLink: React.FC<{
@@ -33,7 +32,11 @@ const NavLink: React.FC<{
     );
 };
 
-const Header: React.FC<HeaderProps> = ({ page, setPage, isLoggedIn, onLogout, cartItemCount }) => {
+const Header: React.FC<HeaderProps> = ({ page, setPage, onLogout }) => {
+    const { isLoggedIn } = useAuth();
+    const { cart } = useCart();
+    const cartItemCount = cart.length;
+
     return (
         <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm sticky top-0 z-40 w-full border-b border-slate-200 dark:border-slate-800">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

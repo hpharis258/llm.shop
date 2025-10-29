@@ -1,5 +1,6 @@
 import React from 'react';
-import { Page } from '../App';
+// Fix: Correct the import path for the Page type.
+import { Page } from '../types';
 import { PencilIcon, SparklesIcon, ShoppingBagIcon } from './Icons';
 
 interface HomePageProps {
