@@ -79,7 +79,7 @@ function AppLayout() {
             path="/login" 
             element={<LoginPage onLogin={handleLogin} reason={redirectPage === 'cart' ? "Please sign in to view your cart." : undefined} onNavigate={navigate} />} 
           />
-          <Route path="/signup" element={<SignUp />} />
+          <Route path="/signup" element={<SignUp onLogin={handleLogin} onNavigate={navigate} />} />
           <Route 
             path="/cart" 
             element={isLoggedIn ? <CartPage onNavigate={navigate} /> : <LoginPage onLogin={handleLogin} reason="Please sign in to view your cart" onNavigate={navigate} />} 

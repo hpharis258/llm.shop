@@ -13,6 +13,14 @@ const firebaseConfig = {
   // optional: messagingSenderId, appId, etc. as VITE_ prefixed envs
 };
 
+// Debug: Log available env vars (remove this in production)
+console.log('Available env vars:', {
+  VITE_FIREBASE_API_KEY: !!env.VITE_FIREBASE_API_KEY,
+  VITE_AUTH_DOMAIN: !!env.VITE_AUTH_DOMAIN,
+  VITE_PROJECT_ID: !!env.VITE_PROJECT_ID,
+  VITE_STORAGE_BUCKET: !!env.VITE_STORAGE_BUCKET
+});
+
 // Helpful runtime checks so missing envs fail fast with a clear message
 const missing = Object.entries(firebaseConfig).filter(([, v]) => !v).map(([k]) => k);
 if (missing.length) {
@@ -29,16 +37,69 @@ export const app = initializeApp({
 });
 export const auth = getAuth(app);
 
-// sign up
-export async function signUp(email: string, password: string) {
-  const userCred = await createUserWithEmailAndPassword(auth, email, password);
-  return userCred.user;
+// Firebase error codes and their user-friendly messages
+const AUTH_ERROR_MESSAGES: { [key: string]: string } = {
+  'auth/email-already-in-use': 'An account with this email already exists',
+  'auth/invalid-email': 'Please enter a valid email address',
+  'auth/operation-not-allowed': 'Email/password accounts are not enabled. Please contact support.',
+  'auth/weak-password': 'Password is too weak. It must be at least 6 characters long and contain a non-alphanumeric character.',
+  'auth/user-disabled': 'This account has been disabled. Please contact support.',
+  'auth/user-not-found': 'No account found with this email',
+  'auth/wrong-password': 'Incorrect password',
+  'auth/invalid-credential': 'Invalid login credentials',
+  'auth/too-many-requests': 'Too many unsuccessful login attempts. Please try again later.',
+  'auth/network-request-failed': 'Network error. Please check your connection.',
+  'PASSWORD_DOES_NOT_MEET_REQUIREMENTS': 'Password must contain at least one non-alphanumeric character (e.g., !@#$%^&*)'
+};
+
+// Helper function to get user-friendly error message
+function getAuthErrorMessage(error: any): string {
+  console.error('Auth error:', error);
+  
+  // Handle specific Firebase error codes
+  if (error.code && AUTH_ERROR_MESSAGES[error.code]) {
+    return AUTH_ERROR_MESSAGES[error.code];
+  }
+  
+  // Handle password requirement errors
+  if (error.message?.includes('PASSWORD_DOES_NOT_MEET_REQUIREMENTS')) {
+    return AUTH_ERROR_MESSAGES['PASSWORD_DOES_NOT_MEET_REQUIREMENTS'];
+  }
+
+  // Default error message
+  return 'An error occurred during authentication. Please try again.';
 }
 
-// sign in
+// sign up with enhanced error handling
+export async function signUp(email: string, password: string) {
+  try {
+    const userCred = await createUserWithEmailAndPassword(auth, email, password);
+    return { 
+      user: userCred.user,
+      error: null
+    };
+  } catch (error: any) {
+    return {
+      user: null,
+      error: getAuthErrorMessage(error)
+    };
+  }
+}
+
+// sign in with enhanced error handling
 export async function signIn(email: string, password: string) {
-  const userCred = await signInWithEmailAndPassword(auth, email, password);
-  return userCred.user;
+  try {
+    const userCred = await signInWithEmailAndPassword(auth, email, password);
+    return {
+      user: userCred.user,
+      error: null
+    };
+  } catch (error: any) {
+    return {
+      user: null,
+      error: getAuthErrorMessage(error)
+    };
+  }
 }
 
 // get the current ID token (refreshes automatically if expired)

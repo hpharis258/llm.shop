@@ -1,11 +1,13 @@
 import { GoogleGenAI } from "@google/genai";
 
+const env = (import.meta as any).env || {};
+
 // Ensure the API key is available in the environment variables
-if (!process.env.API_KEY) {
-    throw new Error("API_KEY environment variable not set");
+if (!env.VITE_GEMINI_API_KEY) {
+    throw new Error("VITE_GEMINI_API_KEY environment variable not set. Make sure it's defined in .env.local");
 }
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const ai = new GoogleGenAI({ apiKey: env.VITE_GEMINI_API_KEY });
 
 const getStylePromptPrefix = (style: string): string => {
     switch (style) {

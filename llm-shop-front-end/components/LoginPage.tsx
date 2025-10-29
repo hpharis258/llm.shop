@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { UserIcon, LockIcon } from './Icons';
 import { Page } from '../types';
-import { href } from 'react-router-dom';
+import { signIn } from '../auth/firebaseClient';
 
 interface LoginPageProps {
     onLogin: () => void;
@@ -10,14 +10,27 @@ interface LoginPageProps {
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({ onLogin, reason, onNavigate }) => {
-    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [error, setError] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // For this demo, any username/password is valid
-        if (username && password) {
-            onLogin();
+        setError(null);
+        setIsLoading(true);
+        
+        try {
+            const result = await signIn(email, password);
+            if (result.error) {
+                setError(result.error);
+            } else {
+                onLogin();
+            }
+        } catch (err) {
+            setError('An unexpected error occurred. Please try again.');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -33,27 +46,32 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, reason, onNavigate }) =>
                     Sign In
                 </h2>
                 <form onSubmit={handleSubmit} className="space-y-6">
+                    {error && (
+                        <div className="p-3 bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-md">
+                            <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
+                        </div>
+                    )}
                     <div>
-                        <label htmlFor="username" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-                            Username
+                        <label htmlFor="email" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                            Email
                         </label>
                         <div className="mt-1 relative">
                              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <UserIcon className="h-5 w-5 text-slate-400" />
                             </div>
                             <input
-                                type="text"
-                                id="username"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
+                                type="email"
+                                id="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
                                 required
                                 className="pl-10 w-full p-3 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-[var(--color-primary-500)] focus:border-[var(--color-primary-500)] transition"
-                                placeholder="any_user"
+                                placeholder="your@email.com"
                             />
                         </div>
                     </div>
                     <div>
-                        <label htmlFor="password"className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                        <label htmlFor="password" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                             Password
                         </label>
                         <div className="mt-1 relative">
@@ -67,17 +85,17 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, reason, onNavigate }) =>
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
                                 className="pl-10 w-full p-3 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-[var(--color-primary-500)] focus:border-[var(--color-primary-500)] transition"
-                                placeholder="any_password"
+                                placeholder="Enter your password"
                             />
                         </div>
                     </div>
                     <div>
                          <button
                             type="submit"
-                            disabled={!username || !password}
+                            disabled={!email || !password || isLoading}
                             className="w-full inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-[var(--color-primary-600)] hover:bg-[var(--color-primary-700)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary-500)] disabled:bg-opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
-                            Log In
+                            {isLoading ? 'Signing in...' : 'Sign In'}
                         </button>
                         <div className="mt-2 text-center">
                             <button
