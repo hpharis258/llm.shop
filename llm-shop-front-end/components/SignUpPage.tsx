@@ -1,23 +1,29 @@
 import React, { useState } from 'react';
 import { UserIcon, LockIcon } from './Icons';
-import { Page } from '../types';
-import { href } from 'react-router-dom';
+import {signUp} from '../auth/firebaseClient'
+//import {}
 
-interface LoginPageProps {
+interface SignUpPageProps {
     onLogin: () => void;
     reason?: string;
-    onNavigate: (page: Page) => void;
 }
 
-const LoginPage: React.FC<LoginPageProps> = ({ onLogin, reason, onNavigate }) => {
+const SignUpPage: React.FC<SignUpPageProps> = ({ onLogin, reason }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [passwordRepeat, setPasswordRepeat] = useState('');
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        if (password !== passwordRepeat) {
+            alert("Passwords do not match!");
+            return;
+        }
         // For this demo, any username/password is valid
-        if (username && password) {
-            onLogin();
+        if (username && password && password === passwordRepeat) {
+            //onLogin();
+            signUp(username, password);
+            console.log('User signed up:', username);
         }
     };
 
@@ -30,12 +36,12 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, reason, onNavigate }) =>
                     </div>
                 )}
                 <h2 className="text-3xl font-extrabold text-center text-slate-900 dark:text-white mb-6">
-                    Sign In
+                    Sign Up
                 </h2>
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
                         <label htmlFor="username" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-                            Username
+                            email
                         </label>
                         <div className="mt-1 relative">
                              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -48,7 +54,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, reason, onNavigate }) =>
                                 onChange={(e) => setUsername(e.target.value)}
                                 required
                                 className="pl-10 w-full p-3 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-[var(--color-primary-500)] focus:border-[var(--color-primary-500)] transition"
-                                placeholder="any_user"
+                                placeholder="user@mail.com"
                             />
                         </div>
                     </div>
@@ -67,7 +73,26 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, reason, onNavigate }) =>
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
                                 className="pl-10 w-full p-3 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-[var(--color-primary-500)] focus:border-[var(--color-primary-500)] transition"
-                                placeholder="any_password"
+                                placeholder="********"
+                            />
+                        </div>
+                    </div>
+                      <div>
+                        <label htmlFor="password"className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                            Repeat Password
+                        </label>
+                        <div className="mt-1 relative">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <LockIcon className="h-5 w-5 text-slate-400" />
+                            </div>
+                            <input
+                                type="password"
+                                id="password"
+                                value={passwordRepeat}
+                                onChange={(e) => setPasswordRepeat(e.target.value)}
+                                required
+                                className="pl-10 w-full p-3 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-[var(--color-primary-500)] focus:border-[var(--color-primary-500)] transition"
+                                placeholder="********"
                             />
                         </div>
                     </div>
@@ -77,15 +102,15 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, reason, onNavigate }) =>
                             disabled={!username || !password}
                             className="w-full inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-[var(--color-primary-600)] hover:bg-[var(--color-primary-700)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary-500)] disabled:bg-opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
-                            Log In
+                            Sign Up
                         </button>
                         <div className="mt-2 text-center">
-                            <button
-                                onClick={() => window.location.href = '/signup'}
+                            <a
+                                href="/login"
                                 className="text-[var(--color-primary-600)] hover:text-[var(--color-primary-700)] font-medium"
                             >
-                                Create an account
-                            </button>
+                                Already have an account? Log in
+                            </a>
                         </div>
                     </div>
                 </form>
@@ -94,4 +119,4 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, reason, onNavigate }) =>
     );
 };
 
-export default LoginPage;
+export default SignUpPage;

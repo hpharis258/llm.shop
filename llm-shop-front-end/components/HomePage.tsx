@@ -10,7 +10,7 @@ interface HomePageProps {
 const exampleProducts = [
     {
         title: "Cosmic Cat Astronaut Mug",
-        description: "A cartoon mug of a cat in an astronaut helmet floating in space."
+        description: "A cartoon mug of a cat in an astronaut helmet floating in space.",
     },
     {
         title: "Steampunk Corgi T-Shirt",
