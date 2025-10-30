@@ -1,6 +1,6 @@
 // firebaseClient.ts
 import { initializeApp } from "firebase/app";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, GoogleAuthProvider, signInWithPopup} from "firebase/auth";
 
 // Vite exposes env vars via import.meta.env and requires a VITE_ prefix for client-visible variables.
 // Ensure your .env.local contains VITE_FIREBASE_API_KEY, VITE_AUTH_DOMAIN, VITE_PROJECT_ID, VITE_STORAGE_BUCKET, etc.
@@ -124,4 +124,22 @@ export async function callApi(path: string, body?: any) {
   });
   if (!res.ok) throw new Error(`API error: ${res.status}`);
   return res.json();
+}
+
+export async function signInWithGoogle() {
+  try {
+    const provider = new GoogleAuthProvider();
+    // Option: you can set provider.addScope('profile') / provider.addScope('email') if needed
+    const userCred = await signInWithPopup(auth, provider);
+    return {
+      user: userCred.user,
+      error: null
+    };
+  } catch (error: any) {
+    // Fallback: if popup blocked you could use signInWithRedirect(auth, provider)
+    return {
+      user: null,
+      error: getAuthErrorMessage(error)
+    };
+  }
 }

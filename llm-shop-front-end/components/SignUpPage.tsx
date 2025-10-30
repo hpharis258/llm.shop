@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { UserIcon, LockIcon } from './Icons';
-import { signUp } from '../auth/firebaseClient';
+import { signUp, signInWithGoogle } from '../auth/firebaseClient';
 import { Page } from '../types';
 
 interface SignUpPageProps {
@@ -25,6 +25,21 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onLogin, reason, onNavigate }) 
     ];
 
     const meetsAllRequirements = (p: string) => passwordRequirements.every(req => req.check(p));
+
+    const handleGoogleSignUp = async () => {
+        // Placeholder for Google Sign-Up logic
+        console.log("Google Sign-Up clicked");
+          setError(null);
+        setIsLoading(true);
+        const result = await signInWithGoogle();
+        setIsLoading(false);
+        if (result.error) {
+        setError(result.error);
+        return;
+        }
+        // on success
+        onLogin();
+    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -161,15 +176,24 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onLogin, reason, onNavigate }) 
                         >
                             {isLoading ? 'Creating account...' : 'Sign Up'}
                         </button>
+                       
                         <div className="mt-2 text-center">
-                            <button
-                                onClick={() => onNavigate('login')}
-                                type="button"
-                                className="text-[var(--color-primary-600)] hover:text-[var(--color-primary-700)] font-medium"
-                            >
-                                Already have an account? Log in
-                            </button>
+                         or
                         </div>
+                          <div className="mt-2">
+                        <button
+                            onClick={() => handleGoogleSignUp()}
+                            type="button"
+                            className="w-full inline-flex items-center justify-center px-4 py-3 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-100 text-[var(--color-primary-600)] hover:bg-slate-50 dark:hover:bg-slate-300 rounded-md shadow-sm font-medium transition"
+                        >
+                            <img
+                                src={'../images/google.png'}
+                                alt="Google logo"
+                                className="h-5 w-5 mr-3 hv:bg-slate-300 rounded-full"
+                            />
+                            <span>Sign up with Google</span>
+                        </button>
+                    </div>
                     </div>
                 </form>
             </div>
