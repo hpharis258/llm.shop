@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { UserIcon, LockIcon } from './Icons';
 import { Page } from '../types';
-import { signIn } from '../auth/firebaseClient';
+import { signIn, signInWithGoogle } from '../auth/firebaseClient';
 
 interface LoginPageProps {
     onLogin: () => void;
@@ -33,6 +33,22 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, reason, onNavigate }) =>
             setIsLoading(false);
         }
     };
+
+    const handleGoogleSignUp = async () => {
+            // Placeholder for Google Sign-Up logic
+            console.log("Google Sign-Up clicked");
+              setError(null);
+            setIsLoading(true);
+            const result = await signInWithGoogle();
+            console.log("Google Sign-Up result:", result);
+            setIsLoading(false);
+            if (result.error) {
+            setError(result.error);
+            return;
+            }
+            // on success
+            onLogin();
+        }
 
     return (
         <div className="max-w-sm mx-auto animate-fade-in">
@@ -105,6 +121,23 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, reason, onNavigate }) =>
                                 Create an account
                             </button>
                         </div>
+                          <div className="mt-2 text-center">
+                         or
+                        </div>
+                          <div className="mt-2">
+                        <button
+                            onClick={() => handleGoogleSignUp()}
+                            type="button"
+                            className="w-full inline-flex items-center justify-center px-4 py-3 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-100 text-[var(--color-primary-600)] hover:bg-slate-50 dark:hover:bg-slate-300 rounded-md shadow-sm font-medium transition"
+                        >
+                            <img
+                                src={'../images/google.png'}
+                                alt="Google logo"
+                                className="h-5 w-5 mr-3 hv:bg-slate-300 rounded-full"
+                            />
+                            <span>Sign in with Google</span>
+                        </button>
+                    </div>
                     </div>
                 </form>
             </div>
