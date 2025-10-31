@@ -1,6 +1,6 @@
 // firebaseClient.ts
 import { initializeApp } from "firebase/app";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, GoogleAuthProvider, signInWithPopup} from "firebase/auth";
+import {signOut, getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, GoogleAuthProvider, signInWithPopup} from "firebase/auth";
 
 // Vite exposes env vars via import.meta.env and requires a VITE_ prefix for client-visible variables.
 // Ensure your .env.local contains VITE_FIREBASE_API_KEY, VITE_AUTH_DOMAIN, VITE_PROJECT_ID, VITE_STORAGE_BUCKET, etc.
@@ -143,3 +143,13 @@ export async function signInWithGoogle() {
     };
   }
 }
+
+export async function signOutUser() {
+  try {
+    await signOut(auth);
+    return { success: true, error: null };
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'sign_out_failed' };
+  }
+}
+// .

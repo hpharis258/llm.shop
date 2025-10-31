@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import { BaseTheme, AccentColor, Product, CartItem } from '../types';
-
+import { signOutUser } from '../auth/firebaseClient';
 // --- Theme Context ---
 interface ThemeContextType {
   baseTheme: BaseTheme;
@@ -98,6 +98,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const logout = () => {
     localStorage.removeItem('isLoggedIn');
     setIsLoggedIn(false);
+    var result = signOutUser();
+    console.log('User logged out', result);
   };
 
   return (
