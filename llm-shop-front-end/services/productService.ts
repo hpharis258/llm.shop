@@ -8,7 +8,7 @@ export const generateProduct = async (prompt: string, style: string): Promise<st
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ prompt: fullPrompt }),
+            body: JSON.stringify({ Prompt: prompt, Style: style  }),
         });
         console.log("response", response);
         if (!response.ok) {
@@ -17,7 +17,7 @@ export const generateProduct = async (prompt: string, style: string): Promise<st
 
         const data = await response.json();
         console.log("data", data);
-        return "data:image/png;base64,";
+        return data.image;
 
         // const response = await ai.models.generateImages({
         //     model: 'imagen-4.0-generate-001',

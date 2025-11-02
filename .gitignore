@@ -1,1 +1,50 @@
-.idea
+llm-shop-backend/appsettings.Development.json
+# IDEs
+.idea/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build output
+bin/
+obj/
+out/
+Debug/
+Release/
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+.nuget/
+
+# Logs and temporary files
+*.log
+*.tlog
+*.cache
+*.tmp
+*.temp
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# User secrets and local config
+llm-shop-backend/appsettings.Development.json
+secrets.json
+
+# Coverage / test output
+TestResults/
+coverage/
+
+*.dll
+*pdb
+*.exe
+*.app
+*.ilk
+*.meta
+*.obj
+llm-shop-backend/bin/Debug/net9.0/llm-shop-backend.deps.json
+llm-shop-backend/obj/Debug/net9.0/llm-shop-backend.AssemblyInfo.cs
