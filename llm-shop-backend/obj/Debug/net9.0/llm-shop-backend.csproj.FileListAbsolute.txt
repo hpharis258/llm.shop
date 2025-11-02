@@ -31,3 +31,7 @@
 /Users/haroldasvaranauskas/Desktop/llm.shop/llm-shop-backend/obj/Debug/net9.0/llm-shop-backend.pdb
 /Users/haroldasvaranauskas/Desktop/llm.shop/llm-shop-backend/obj/Debug/net9.0/llm-shop-backend.genruntimeconfig.cache
 /Users/haroldasvaranauskas/Desktop/llm.shop/llm-shop-backend/obj/Debug/net9.0/ref/llm-shop-backend.dll
+/Users/haroldasvaranauskas/Desktop/llm.shop/llm-shop-backend/obj/Debug/net9.0/llm-shop-backend.sourcelink.json
+/Users/haroldasvaranauskas/Desktop/llm.shop/llm-shop-backend/bin/Debug/net9.0/Swashbuckle.AspNetCore.Swagger.dll
+/Users/haroldasvaranauskas/Desktop/llm.shop/llm-shop-backend/bin/Debug/net9.0/Swashbuckle.AspNetCore.SwaggerGen.dll
+/Users/haroldasvaranauskas/Desktop/llm.shop/llm-shop-backend/bin/Debug/net9.0/Swashbuckle.AspNetCore.SwaggerUI.dll

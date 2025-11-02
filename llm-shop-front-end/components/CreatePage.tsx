@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import ProductGenerator from './ProductGenerator';
 import ProductDisplay from './ProductDisplay';
+import {generateProduct} from '../services/productService';
 import { generateProductImage, generateProductTitle } from '../services/geminiService';
 import { useCart } from './contexts';
 
@@ -26,7 +27,7 @@ const CreatePage: React.FC = () => {
 
     try {
       const [imageUrl, title] = await Promise.all([
-        generateProductImage(currentPrompt, selectedStyle),
+        generateProduct(currentPrompt, selectedStyle),
         generateProductTitle(currentPrompt)
       ]);
       

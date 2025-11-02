@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("llm-shop-backend")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+56f9149e9e81418dd2d08a2015a82ef65ed2adf9")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9072ddc466935b8acdbfc312e736683f24c3af62")]
 [assembly: System.Reflection.AssemblyProductAttribute("llm-shop-backend")]
 [assembly: System.Reflection.AssemblyTitleAttribute("llm-shop-backend")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

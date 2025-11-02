@@ -1,13 +1,13 @@
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+builder.Services.AddEndpointsApiExplorer(); // required for minimal APIs
+builder.Services.AddSwaggerGen();
+
 builder.Services.AddOpenApi();
 builder.Services.AddCors(options => {
     options.AddPolicy("AllowFrontend", builder => builder.WithOrigins(
-        "http://localhost:5173").AllowAnyHeader().AllowAnyMethod());        
+        "http://localhost:3000").AllowAnyHeader().AllowAnyMethod());        
 });
-
 
 var app = builder.Build();
 
@@ -15,28 +15,27 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "YourChoiceMarket API v1");
+        options.RoutePrefix = "swagger"; 
+    });
 }
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+app.MapPost("/generateProduct", () =>
+    {
+        // Take the prompt and figure out what product is needed and what image should be generated
+        // 1: Generate a product image in Gemini...
+        // 2: Generate product in Printful with the image from Gemini -> Return product to frontend
+        // 3: Optionally Generate the product mockups
+        return Results.Ok($"Generated Product: {Guid.NewGuid()}");
+    })
+    .WithName("GenerateProduct")
+    .WithOpenApi(); 
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
 app.UseCors("AllowFrontend");
 //app.MapControllers();
 app.Run();
