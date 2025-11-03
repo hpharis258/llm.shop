@@ -1,6 +1,8 @@
 using System.Text.Json;
 using llm_shop_backend.Models;
 using Google.GenAI;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
 
 var builder = WebApplication.CreateBuilder(args);
 var geminiKey = builder.Configuration["GeminiAPIKey"];
@@ -12,6 +14,11 @@ builder.Services.AddOpenApi();
 builder.Services.AddCors(options => {
     options.AddPolicy("AllowFrontend", builder => builder.WithOrigins(
         "http://localhost:3000").AllowAnyHeader().AllowAnyMethod());        
+});
+
+FirebaseApp.Create(new AppOptions()
+{
+    Credential = GoogleCredential.FromFile("path/to/serviceAccountKey.json")
 });
 
 var app = builder.Build();

@@ -1,14 +1,19 @@
+import { getAuth } from "firebase/auth";
+
 export const generateProduct = async (prompt: string, style: string): Promise<string> => {
     try {
         const stylePrefix = getStylePromptPrefix(style);
         const fullPrompt = `${stylePrefix} ${prompt}. The image should be high-resolution and look like it's for an e-commerce website.`;
-        
+        const auth = getAuth();
+        const token = await auth.currentUser?.getIdToken();
+
         const response = await fetch('http://localhost:5275/generateProduct', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ Prompt: prompt, Style: style  }),
+            ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: JSON.stringify({ prompt, style }),
         });
         console.log("response", response);
         if (!response.ok) {

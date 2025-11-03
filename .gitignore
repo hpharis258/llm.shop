@@ -1,4 +1,4 @@
-llm-shop-backend/appsettings.Development.json
+./llm-shop-backend/appsettings.Development.json
 # IDEs
 .idea/
 .vscode/
