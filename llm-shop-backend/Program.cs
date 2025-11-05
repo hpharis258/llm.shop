@@ -60,6 +60,9 @@ app.MapPost("/generateProduct", async (generateProductRequest request) =>
 
         // Now deserialize clean JSON
         var separation = JsonSerializer.Deserialize<productImageSeparation>(text);
+        // create / sync product in Printful based on product
+        var product = separation.product;
+        
         var imageGenerateResponse = await client.Models.GenerateImagesAsync(
             model: "imagen-3.0-generate-002",
             prompt: separation.imagePrompt + " in the style of " + request.Style
