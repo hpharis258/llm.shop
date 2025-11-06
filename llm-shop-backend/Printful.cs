@@ -7,4 +7,7 @@ public class Printful
         var authUrl = "https://www.printful.com/oauth/token";
         return authUrl;
     }
+    
+    // 1: Get Categories
+    // 2: 
 }
