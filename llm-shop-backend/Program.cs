@@ -41,8 +41,34 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapPost("/generateProduct", async (generateProductRequest request) =>
+app.MapPost("/generateProduct", async (HttpRequest httpRequest ,generateProductRequest request) =>
     {
+        // Make sure only authenticated users can generate products.
+        var authHeader = httpRequest.Headers["Authorization"].FirstOrDefault();
+
+        if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
+        {
+            return Results.Unauthorized();
+        }
+
+        var idToken = authHeader.Substring("Bearer ".Length).Trim();
+
+        try
+        {
+            // Verify token using Firebase Admin SDK
+            var decodedToken = await FirebaseAdmin.Auth.FirebaseAuth.DefaultInstance
+                .VerifyIdTokenAsync(idToken);
+
+            var userId = decodedToken.Uid;
+            var userEmail = decodedToken.Claims.TryGetValue("email", out var emailClaim)
+                ? emailClaim?.ToString()
+                : "unknown";
+        }
+        catch (FirebaseAdmin.Auth.FirebaseAuthException ex)
+        {
+            //Console.WriteLine("Invalid Firebase token: " + ex.Message);
+            return Results.Unauthorized();
+        }
         var returnImge = "";
         var client = new Client(apiKey: geminiKey);
         //  Gemini Developer API
@@ -163,6 +189,11 @@ app.MapPost("/generateProduct", async (generateProductRequest request) =>
                                     }
                                 }
                             }), System.Text.Encoding.UTF8, "application/json"));
+                        if (productCreateResponse != null)
+                        {
+                            
+                        }
+                        // Generate mockup in printful then return that image URL
                         var debug = productCreateResponse;
 
                     }
