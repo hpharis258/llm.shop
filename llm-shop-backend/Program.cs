@@ -4,6 +4,8 @@ using Google.GenAI;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
 using llm_shop_backend.data;
+using System.Net.Http.Headers;
+using llm_shop_backend.services;
 
 var builder = WebApplication.CreateBuilder(args);
 var geminiKey = builder.Configuration["GeminiAPIKey"];
@@ -41,7 +43,7 @@ app.UseHttpsRedirection();
 
 app.MapPost("/generateProduct", async (generateProductRequest request) =>
     {
-
+        var returnImge = "";
         var client = new Client(apiKey: geminiKey);
         //  Gemini Developer API
         var response = await client.Models.GenerateContentAsync(
@@ -90,63 +92,95 @@ app.MapPost("/generateProduct", async (generateProductRequest request) =>
         Category? matchedCategory = null;
         if (matchedCategoryId.HasValue)
         {
+            matchedCategory = test.ById[matchedCategoryId.Value];
+            var token = builder.Configuration["PrintfullApiKey"];
+            using var http = new HttpClient();
+            http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var resp = await http.GetAsync("https://api.printful.com/products?category_id=" + matchedCategoryId.Value);
+            resp.EnsureSuccessStatusCode();
+            var json = await resp.Content.ReadAsStringAsync();
+            List<ProductJSON> products = JsonSerializer.Deserialize<PrintfulProductsRoot>(json,
+                new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                })?.Result ?? new List<ProductJSON>();
+            
+            // Generate product image
+            var imageGenerateResponse = await client.Models.GenerateImagesAsync(
+                model: "imagen-3.0-generate-002",
+                prompt: separation.imagePrompt + " in the style of " + request.Style
+            );
+            var imageBytes = imageGenerateResponse.GeneratedImages.FirstOrDefault()?.Image?.ImageBytes;
+            var firebaseService = new FirebaseStorageService();
+            var imageUrl = await firebaseService.UploadImageAsync(imageBytes, $"product_{Guid.NewGuid()}.png");
+            
+            string base64 = Convert.ToBase64String(imageBytes!);
+            string dataUri = $"data:image/png;base64,{base64}";
+            returnImge = dataUri;
+            
+            // pick first product for now
+            var selectedProduct = products.FirstOrDefault();
+            Console.WriteLine("Matched Category: " + matchedCategory.Title + " Product to use:" + selectedProduct?.Title);
+            if (selectedProduct != null && selectedProduct.Id != null)
+            {
+                // Query product
+                var productResp = await http.GetAsync("https://api.printful.com/products/" + selectedProduct.Id);
+                productResp.EnsureSuccessStatusCode();
+                var productJson = await productResp.Content.ReadAsStringAsync();
+                Console.WriteLine("Product Details: " + productJson);
+                var rootProductResponse = JsonSerializer.Deserialize<Root>(productJson, 
+                    new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true });
+                var resultProduct = rootProductResponse.result;
+                if (resultProduct != null)
+                {
+                    var variants = resultProduct.variants;
+                    if (variants != null)
+                    {
+                        var firstVariant = variants.FirstOrDefault();
+                        // Create printful product with Gemini image here
+                        var productCreateResponse = await http.PostAsync("https://api.printful.com/store/products", 
+                            new StringContent(JsonSerializer.Serialize(new
+                            {
+                                sync_product = new
+                                {
+                                    name = "Generated Product - " + Guid.NewGuid(),
+                                },
+                                sync_variants = new[]
+                                {
+                                    new
+                                    {
+                                        variant_id = firstVariant?.id,
+                                        files = new[]
+                                        {
+                                            new
+                                            {
+                                                url = imageUrl // Replace with actual image URL after uploading
+                                            }
+                                        }
+                                    }
+                                }
+                            }), System.Text.Encoding.UTF8, "application/json"));
+                        var debug = productCreateResponse;
+
+                    }
+                }
+                
+            }
         }
 
-        // Ask for STRICT JSON only
-        //         var prompt = "You are given a categories list (JSON)." + 
-        //                      "Based on the product that the user selected " + product + 
-        //                      " find a category that should have this product, return STRICT JSON only:"+
-        //                      """
-        //                      Schema:
-        //                      {
-        //                        "suggestions": [
-        //                          { "id": number, "title": string }
-        //                        ]
-        //                      }
-        //
-        //                      User prompt: "beach summer shirts for men"
-        //                      Categories (context JSON):
-        //                      """ + categoriesJson;
+        
 
-        // var matchingCategoriesResponse = await client.Models.GenerateContentAsync("gemini-2.5-flash" ,contents: prompt);
-        //
-        // var matchingCatText = matchingCategoriesResponse.Candidates[0].Content.Parts[0].Text.Trim();; // should be JSON due to ResponseMimeType
-        // using var doc = JsonDocument.Parse(matchingCatText); // validate
-
-        //
-
-        var imageGenerateResponse = await client.Models.GenerateImagesAsync(
-            model: "imagen-3.0-generate-002",
-            prompt: separation.imagePrompt + " in the style of " + request.Style
-        );
-        var imageBytes = imageGenerateResponse.GeneratedImages.FirstOrDefault()?.Image?.ImageBytes;
-
-        string base64 = Convert.ToBase64String(imageBytes!);
-        string dataUri = $"data:image/png;base64,{base64}";
+     
 
         // 4. Return or use it
-        return Results.Ok(new { image = dataUri });
-
-        // // Save the image to a file
-        //         var image = response.GeneratedImages.First().Image;
-        //         await File.WriteAllBytesAsync("skateboard.jpg", image.ImageBytes);
-        //Console.WriteLine(response.Candidates[0].Content.Parts[0].Text);
-        //Console.WriteLine("Received request to generate product with prompt: " + request.Prompt + " and style: " + request.Style);
-
-        // Take the prompt and figure out what product is needed and what image should be generated
-        // 1: Generate a product image in Gemini...
-        // 2: Generate product in Printful with the image from Gemini -> Return product to frontend
-        // 3: Optionally Generate the product mockups
-        //return Results.Ok($"Generated Product: {Guid.NewGuid()}");
+        return Results.Ok(new { image = returnImge });
     })
     .WithName("GenerateProduct")
     .WithOpenApi();
 
 app.UseCors("AllowFrontend");
-//app.MapControllers();
 app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

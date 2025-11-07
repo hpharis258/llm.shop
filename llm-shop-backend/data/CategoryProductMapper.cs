@@ -3,6 +3,58 @@ using System.Text.Json.Serialization;
 
 namespace llm_shop_backend.data;
 
+public class AvailabilityRegions
+{
+    public string US { get; set; }
+    public string EU { get; set; }
+    public string AU { get; set; }
+    public string UK { get; set; }
+}
+
+public class AvailabilityStatus
+{
+    public string region { get; set; }
+    public string status { get; set; }
+}
+
+public class Product
+{
+    public int id { get; set; }
+    public int main_category_id { get; set; }
+    public string type { get; set; }
+    public string type_name { get; set; }
+    public string title { get; set; }
+}
+
+public class Result
+{
+    public Product product { get; set; }
+    public List<Variant> variants { get; set; }
+}
+
+public class Root
+{
+    public int code { get; set; }
+    public Result result { get; set; }
+    public List<object> extra { get; set; }
+}
+
+public class Variant
+{
+    public int id { get; set; }
+    public int product_id { get; set; }
+    public string name { get; set; }
+    public string size { get; set; }
+    public string color { get; set; }
+    public string color_code { get; set; }
+    public object color_code2 { get; set; }
+    public string image { get; set; }
+    public string price { get; set; }
+    public bool in_stock { get; set; }
+    public AvailabilityRegions availability_regions { get; set; }
+    public List<AvailabilityStatus> availability_status { get; set; }
+}
+
 public sealed class CategoriesRoot
 {
     [JsonPropertyName("categories")]
@@ -17,6 +69,18 @@ public sealed class Category
     [JsonPropertyName("catalog_position")] public int CatalogPosition { get; set; }
     [JsonPropertyName("size")] public string? Size { get; set; }
     [JsonPropertyName("title")] public string Title { get; set; } = "";
+}
+
+public class PrintfulProductsRoot
+{
+    [JsonPropertyName("result")]
+    public List<ProductJSON> Result { get; set; } = new();
+}
+public sealed class ProductJSON
+{
+    [JsonPropertyName("id")] public int Id { get; set; }
+    [JsonPropertyName("main_category_id")] public int MainCategoryId { get; set; }
+    [JsonPropertyName("title")] public string Title { get; set; }
 }
 
 public class CategoryProductMapper
@@ -111,4 +175,5 @@ public class CategoryProductMapper
 
         return null;
     }
+    
 }
