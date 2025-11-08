@@ -1,7 +1,85 @@
 using System.Text;
 using System.Text.Json.Serialization;
-
+using Google.Cloud.Firestore;
 namespace llm_shop_backend.data;
+
+
+[FirestoreData]
+public class ShopProduct
+{
+    [FirestoreProperty] public string Id { get; set; } = Guid.NewGuid().ToString();
+
+    // Your internal product info
+    [FirestoreProperty] public string Name { get; set; } = "";
+    [FirestoreProperty] public string Description { get; set; } = "";
+    [FirestoreProperty] public string ImageUrl { get; set; } = "";
+    [FirestoreProperty] public double Price { get; set; } = 0.0;
+    [FirestoreProperty] public string CreatedByUserId { get; set; } = "";
+    [FirestoreProperty] public Timestamp CreatedAt { get; set; } = Timestamp.GetCurrentTimestamp();
+
+    // Printful-specific data needed to create orders
+    [FirestoreProperty] public int PrintfulProductId { get; set; }        // catalog product ID
+    [FirestoreProperty] public int PrintfulVariantId { get; set; }        // variant to order
+    [FirestoreProperty] public string PrintfulSyncProductId { get; set; } // ID of the product in your store (optional)
+    [FirestoreProperty] public string PrintfulMockupUrl { get; set; }     // optional: to display to users
+    [FirestoreProperty] public Dictionary<string, string> Attributes { get; set; } = new(); // size, color, style
+}
+
+public class MockupCreateResponse
+{
+    public int Code { get; set; }
+    public MockupResult Result { get; set; }
+    public object[] Extra { get; set; }
+}
+
+public class MockupResult
+{
+    public string Task_Key { get; set; }
+    public string Status { get; set; }
+}
+
+public class MockupStatusResponse
+{
+    public int Code { get; set; }
+    public MockupStatusResult Result { get; set; }
+}
+
+public class MockupStatusResult
+{
+    public string Status { get; set; }
+    public MockupImageResult ResultData { get; set; }
+    public List<MockupImage> Mockups { get; set; }
+}
+
+public class MockupImageResult
+{
+    public List<MockupImage> Mockups { get; set; }
+}
+
+public class MockupImage
+{
+    public string Placement { get; set; }
+    public string Mockup_Url { get; set; }
+}
+public class ProductCreateRoot
+{
+    public int code { get; set; }
+    public ProductCreateResult result { get; set; }
+    public List<object> extra { get; set; }
+}
+
+public class ProductCreateResult
+{
+    public int id { get; set; }
+    public string external_id { get; set; }
+    public string name { get; set; }
+    public int variants { get; set; }
+    public int synced { get; set; }
+    public object thumbnail_url { get; set; }
+    public bool is_ignored { get; set; }
+}
+
+
 
 public class AvailabilityRegions
 {

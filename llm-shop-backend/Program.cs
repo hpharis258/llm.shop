@@ -5,6 +5,8 @@ using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
 using llm_shop_backend.data;
 using System.Net.Http.Headers;
+using Google.Cloud.Firestore;
+using llm_shop_backend;
 using llm_shop_backend.services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -45,7 +47,7 @@ app.MapPost("/generateProduct", async (HttpRequest httpRequest ,generateProductR
     {
         // Make sure only authenticated users can generate products.
         var authHeader = httpRequest.Headers["Authorization"].FirstOrDefault();
-
+        var uploadUserId = "";
         if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
         {
             return Results.Unauthorized();
@@ -60,6 +62,7 @@ app.MapPost("/generateProduct", async (HttpRequest httpRequest ,generateProductR
                 .VerifyIdTokenAsync(idToken);
 
             var userId = decodedToken.Uid;
+            uploadUserId = userId;
             var userEmail = decodedToken.Claims.TryGetValue("email", out var emailClaim)
                 ? emailClaim?.ToString()
                 : "unknown";
@@ -69,7 +72,7 @@ app.MapPost("/generateProduct", async (HttpRequest httpRequest ,generateProductR
             //Console.WriteLine("Invalid Firebase token: " + ex.Message);
             return Results.Unauthorized();
         }
-        var returnImge = "";
+        var returnImage = "";
         var client = new Client(apiKey: geminiKey);
         //  Gemini Developer API
         var response = await client.Models.GenerateContentAsync(
@@ -139,11 +142,11 @@ app.MapPost("/generateProduct", async (HttpRequest httpRequest ,generateProductR
             );
             var imageBytes = imageGenerateResponse.GeneratedImages.FirstOrDefault()?.Image?.ImageBytes;
             var firebaseService = new FirebaseStorageService();
-            var imageUrl = await firebaseService.UploadImageAsync(imageBytes, $"product_{Guid.NewGuid()}.png");
+            var imageUrl = await firebaseService.UploadImageAsync(imageBytes, $"{uploadUserId}/product_{Guid.NewGuid()}.png");
             
             string base64 = Convert.ToBase64String(imageBytes!);
             string dataUri = $"data:image/png;base64,{base64}";
-            returnImge = dataUri;
+            returnImage = dataUri;
             
             // pick first product for now
             var selectedProduct = products.FirstOrDefault();
@@ -166,7 +169,8 @@ app.MapPost("/generateProduct", async (HttpRequest httpRequest ,generateProductR
                     if (variants != null)
                     {
                         var firstVariant = variants.FirstOrDefault();
-                        // Create printful product with Gemini image here
+                        double newPrice = Convert.ToDouble(firstVariant.price) * 1.2;
+                        // Create printful product with Gemini image
                         var productCreateResponse = await http.PostAsync("https://api.printful.com/store/products", 
                             new StringContent(JsonSerializer.Serialize(new
                             {
@@ -179,22 +183,90 @@ app.MapPost("/generateProduct", async (HttpRequest httpRequest ,generateProductR
                                     new
                                     {
                                         variant_id = firstVariant?.id,
+                                        retail_price = newPrice.ToString("F2"),
                                         files = new[]
                                         {
                                             new
                                             {
-                                                url = imageUrl // Replace with actual image URL after uploading
+                                                url = imageUrl
                                             }
                                         }
                                     }
                                 }
                             }), System.Text.Encoding.UTF8, "application/json"));
-                        if (productCreateResponse != null)
+                        if (productCreateResponse != null && productCreateResponse.IsSuccessStatusCode)
                         {
+                            ProductCreateRoot? productCreateResult = JsonSerializer.Deserialize<ProductCreateRoot>(
+                                await productCreateResponse.Content.ReadAsStringAsync(),
+                                new JsonSerializerOptions
+                                {
+                                    PropertyNameCaseInsensitive = true
+                                });
+                            var createdProductId = productCreateResult?.result?.id;
+                            if (createdProductId != null)
+                            {
+                                var mockUpGenerateResponse = await http.PostAsync("https://api.printful.com/mockup-generator/create-task/" + selectedProduct.Id, 
+                                    new StringContent(JsonSerializer.Serialize(new
+                                    {
+                                        variant_ids = new[] { firstVariant.id }, // variant ID from product variants
+                                        files = new[]
+                                        {
+                                            new
+                                            {
+                                                placement = "front",
+                                                image_url = imageUrl,
+                                                position = new
+                                                {
+                                                    area_width = 1800,
+                                                    area_height = 2400,
+                                                    width = 1800,
+                                                    height = 2400,
+                                                    top = 0,
+                                                    left = 0
+                                                }
+                                            }
+                                        }
+                                    }), System.Text.Encoding.UTF8, "application/json"));
+                                // Generate mockup in printful then return that image URL
+                                var responseText = await mockUpGenerateResponse.Content.ReadAsStringAsync();
+                                Console.WriteLine($"Status: {mockUpGenerateResponse.StatusCode}");
+                                Console.WriteLine($"Body: {responseText}");
+                                var taskResponse = JsonSerializer.Deserialize<MockupCreateResponse>(responseText,
+                                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                                var taskKey = taskResponse.Result.Task_Key;
+                                var mockupUrl = await Printful.WaitForMockupUrl(http, taskKey);
+                                
+                                returnImage = mockupUrl ?? returnImage;
+                                try
+                                {
+                                    // store product info in firestore
+                                    var db = FirestoreDb.Create("yourchoicemarket-c63a3");
+                                    var shopProduct = new ShopProduct
+                                    {
+                                        PrintfulProductId = createdProductId.Value,
+                                        PrintfulVariantId = firstVariant.id,
+                                        PrintfulSyncProductId = productCreateResult?.result?.external_id,
+                                        PrintfulMockupUrl = returnImage,
+                                        CreatedByUserId = uploadUserId,
+                                        CreatedAt = Timestamp.GetCurrentTimestamp(),
+                                        Attributes = new Dictionary<string, string>
+                                        {
+                                            { "style", request.Style },
+                                            { "prompt", request.Prompt }
+                                        }
+                                    };
+                                    var dbSaveResult = await db.Collection("products").Document(shopProduct.Id).SetAsync(shopProduct);
+                                }catch (Exception ex)
+                                {
+                                    Console.WriteLine("Error saving to Firestore: " + ex.Message);
+                                }
+                               
+                            }
                             
+                           
+                          
                         }
-                        // Generate mockup in printful then return that image URL
-                        var debug = productCreateResponse;
+                        
 
                     }
                 }
@@ -207,7 +279,7 @@ app.MapPost("/generateProduct", async (HttpRequest httpRequest ,generateProductR
      
 
         // 4. Return or use it
-        return Results.Ok(new { image = returnImge });
+        return Results.Ok(new { image = returnImage });
     })
     .WithName("GenerateProduct")
     .WithOpenApi();
