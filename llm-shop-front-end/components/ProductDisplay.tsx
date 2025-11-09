@@ -9,9 +9,10 @@ interface ProductDisplayProps {
   error: string | null;
   onStartOver: () => void;
   onAddToCart: (product: Product) => void;
+  description?: string;
 }
 
-const ProductDisplay: React.FC<ProductDisplayProps> = ({ imageUrl, title, isLoading, error, onStartOver, onAddToCart }) => {
+const ProductDisplay: React.FC<ProductDisplayProps> = ({ imageUrl, title, isLoading, error, onStartOver, onAddToCart, description }) => {
   if (isLoading) {
     return <LoadingSpinner />;
   }
@@ -52,7 +53,7 @@ const ProductDisplay: React.FC<ProductDisplayProps> = ({ imageUrl, title, isLoad
           <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{title}</h3>
           <p className="text-3xl font-extrabold text-[var(--color-primary-600)] dark:text-[var(--color-primary-400)] mt-2">${product.price}</p>
           <p className="mt-4 text-slate-600 dark:text-slate-300">
-            This unique, AI-generated product is ready to be yours. Each item is crafted on-demand, ensuring a one-of-a-kind piece you won't find anywhere else.
+            {description}
           </p>
           <div className="mt-6 flex flex-col sm:flex-row gap-4">
             <button 

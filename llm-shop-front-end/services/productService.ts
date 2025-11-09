@@ -1,6 +1,12 @@
 import { getAuth } from "firebase/auth";
 
-export const generateProduct = async (prompt: string, style: string): Promise<string> => {
+export interface GeneratedProduct {
+  imageUrl: string;
+  title: string;
+  description?: string;
+}
+
+export const generateProduct = async (prompt: string, style: string): Promise<GeneratedProduct> => {
     try {
         const stylePrefix = getStylePromptPrefix(style);
         const fullPrompt = `${stylePrefix} ${prompt}. The image should be high-resolution and look like it's for an e-commerce website.`;
@@ -22,7 +28,7 @@ export const generateProduct = async (prompt: string, style: string): Promise<st
 
         const data = await response.json();
         console.log("data", data);
-        return data.image;
+        return { imageUrl: data.image, title: data.title, description: data.description };
 
     } catch (error) {
         console.error("Error generating image:", error);

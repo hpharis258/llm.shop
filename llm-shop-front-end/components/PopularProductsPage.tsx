@@ -12,6 +12,9 @@ function placeholderSvg(text: string) {
   return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300"><rect width="100%" height="100%" fill="%23475569" /><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="20px" fill="%23e2e8f0">${text}</text></svg>`;
 }
 
+const formatNumber2 = (n: number, locale = 'en-US') =>
+  new Intl.NumberFormat(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+
 const PAGE_SIZE = 6;
 
 const PopularProductsPage: React.FC = () => {
@@ -26,7 +29,7 @@ const PopularProductsPage: React.FC = () => {
 
   const toCardProduct = (p: ProductWithTitle): Product => ({
     title: p.title || p.name || 'Product',
-    price: String(p.price ?? ''),
+    price: String(formatNumber2(p.price) ?? ''),
     description: p.description ?? '',
     imageUrl: p.printfulMockupUrl || (p as any).printfulMockupUrl || placeholderSvg(p.title || p.name || 'Product'),
   });

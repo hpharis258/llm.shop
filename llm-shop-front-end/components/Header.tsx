@@ -54,7 +54,7 @@ const Header: React.FC<HeaderProps> = ({ page, setPage, onLogout }) => {
                         <NavLink pageName="create" currentPage={page} setPage={setPage}>Create</NavLink>
                         <NavLink pageName="popular" currentPage={page} setPage={setPage}>Popular</NavLink>
                         <NavLink pageName="about" currentPage={page} setPage={setPage}>About</NavLink>
-                        {isLoggedIn && <NavLink pageName="settings" currentPage={page} setPage={setPage}>Settings</NavLink>}
+                        {/* {isLoggedIn && <NavLink pageName="settings" currentPage={page} setPage={setPage}>Settings</NavLink>} */}
                         
                         <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-2"></div>
 

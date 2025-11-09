@@ -16,6 +16,7 @@ const CreatePage: React.FC = () => {
   
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [generatedTitle, setGeneratedTitle] = useState<string | null>(null);
+  const [generatedDescription, setGeneratedDescription] = useState<string | null>(null);
   const { isLoggedIn } = useAuth();
   const { addToCart } = useCart();
 
@@ -33,13 +34,11 @@ const CreatePage: React.FC = () => {
     setGeneratedTitle(null);
 
     try {
-      const [imageUrl, title] = await Promise.all([
-        generateProduct(currentPrompt, selectedStyle),
-        generateProductTitle(currentPrompt)
-      ]);
-      
+      const { imageUrl, title, description } = await generateProduct(currentPrompt, selectedStyle);
+      console.log("Generated product:", { imageUrl, title, generatedDescription });
       setGeneratedImage(imageUrl);
       setGeneratedTitle(title);
+      setGeneratedDescription(description);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An unknown error occurred.");
     } finally {
@@ -72,6 +71,7 @@ const CreatePage: React.FC = () => {
           error={error}
           onStartOver={handleStartOver}
           onAddToCart={addToCart}
+          description={generatedDescription}
         />
       )}
     </div>

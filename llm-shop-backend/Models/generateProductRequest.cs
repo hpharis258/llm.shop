@@ -10,4 +10,6 @@ public class productImageSeparation
 {
     public string product { get; set; }
     public string imagePrompt { get; set; }
+    public string title { get; set; }
+    public string description { get; set; }
 }

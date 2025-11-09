@@ -83,7 +83,7 @@ app.MapPost("/generateProduct", async (HttpRequest httpRequest ,generateProductR
         var client = new Client(apiKey: geminiKey);
         //  Gemini Developer API
         var response = await client.Models.GenerateContentAsync(
-            model: "gemini-2.5-flash", contents: "Your task is to figure out what product does the user want to generate and what image should be generated based on the following prompt, If the input prompt does not contain a product return cap as the product -> PROMPT:  " + request.Prompt + " the Image Prompt Response SHOULD NOT contain the product itself. Respond **only** in valid JSON do not include markdown or explanations Example format: {{'product': 'cup', 'imagePrompt': 'a santa on a red background with a reindeer'}}"
+            model: "gemini-2.5-flash", contents: "Your task is to figure out what product does the user want to generate and what image should be generated based on the following prompt, If the input prompt does not contain a product return cap as the product -> PROMPT:  " + request.Prompt + " the Image Prompt Response SHOULD NOT contain the product itself. Also generate product Title and Description. Respond **only** in valid JSON do not include markdown or explanations Example format: {{'product': 'cup', 'imagePrompt': 'a santa on a red background with a reindeer', title; 'Christmas cup', 'description': 'A festive cup for the holiday season.'}}"
         );
         var text = response.Candidates[0].Content.Parts[0].Text.Trim();
 
@@ -243,6 +243,7 @@ app.MapPost("/generateProduct", async (HttpRequest httpRequest ,generateProductR
                                    
                                     var shopProduct = new ShopProduct
                                     {
+                                        Name = separation.title,
                                         PrintfulProductId = createdProductId.Value,
                                         PrintfulVariantId = firstVariant.id,
                                         PrintfulSyncProductId = productCreateResult?.result?.external_id,
@@ -255,7 +256,7 @@ app.MapPost("/generateProduct", async (HttpRequest httpRequest ,generateProductR
                                             { "prompt", request.Prompt }
                                         },
                                         Price = Math.Round(newPrice, 2),
-                                        Description = "A product generated with AI based on your prompt.",
+                                        Description = separation.description,
                                         ImageUrl = justImageUrl,
                                     };
                                     var docRef = await db.Collection("products").AddAsync(shopProduct);
@@ -282,7 +283,7 @@ app.MapPost("/generateProduct", async (HttpRequest httpRequest ,generateProductR
      
 
         // 4. Return or use it
-        return Results.Ok(new { image = returnImage });
+        return Results.Ok(new { image = returnImage, title = separation.title, description = separation.description });
     })
     .WithName("GenerateProduct")
     .WithOpenApi();
