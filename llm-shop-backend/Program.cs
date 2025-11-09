@@ -22,10 +22,16 @@ builder.Services.AddCors(options =>
         "http://localhost:3000").AllowAnyHeader().AllowAnyMethod());
 });
 
-FirebaseApp.Create(new AppOptions()
+var firebase = FirebaseApp.Create(new AppOptions()
 {
     Credential = GoogleCredential.FromFile("firebase/yourchoicemarket-c63a3-firebase-adminsdk-fbsvc-f8a80b9478.json")
 });
+
+FirestoreDb db = new FirestoreDbBuilder
+{
+    ProjectId = "yourchoicemarket-c63a3",
+    Credential = GoogleCredential.FromFile("firebase/yourchoicemarket-c63a3-firebase-adminsdk-fbsvc-f8a80b9478.json")
+}.Build();
 
 var app = builder.Build();
 
@@ -48,6 +54,7 @@ app.MapPost("/generateProduct", async (HttpRequest httpRequest ,generateProductR
         // Make sure only authenticated users can generate products.
         var authHeader = httpRequest.Headers["Authorization"].FirstOrDefault();
         var uploadUserId = "";
+        var justImageUrl = "";
         if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
         {
             return Results.Unauthorized();
@@ -95,9 +102,6 @@ app.MapPost("/generateProduct", async (HttpRequest httpRequest ,generateProductR
         var separation = JsonSerializer.Deserialize<productImageSeparation>(text);
         // create / sync product in Printful based on product
         var product = separation.product;
-        //
-        // Load your JSON context
-        //var stream = await File.ReadAllTextAsync("data/categories.json");
         var path = Path.Combine(AppContext.BaseDirectory, "data", "categories.json");
 
         await using var stream = File.OpenRead(path);
@@ -143,10 +147,7 @@ app.MapPost("/generateProduct", async (HttpRequest httpRequest ,generateProductR
             var imageBytes = imageGenerateResponse.GeneratedImages.FirstOrDefault()?.Image?.ImageBytes;
             var firebaseService = new FirebaseStorageService();
             var imageUrl = await firebaseService.UploadImageAsync(imageBytes, $"{uploadUserId}/product_{Guid.NewGuid()}.png");
-            
-            string base64 = Convert.ToBase64String(imageBytes!);
-            string dataUri = $"data:image/png;base64,{base64}";
-            returnImage = dataUri;
+            justImageUrl = imageUrl;
             
             // pick first product for now
             var selectedProduct = products.FirstOrDefault();
@@ -235,12 +236,11 @@ app.MapPost("/generateProduct", async (HttpRequest httpRequest ,generateProductR
                                     new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                                 var taskKey = taskResponse.Result.Task_Key;
                                 var mockupUrl = await Printful.WaitForMockupUrl(http, taskKey);
-                                
                                 returnImage = mockupUrl ?? returnImage;
                                 try
                                 {
                                     // store product info in firestore
-                                    var db = FirestoreDb.Create("yourchoicemarket-c63a3");
+                                   
                                     var shopProduct = new ShopProduct
                                     {
                                         PrintfulProductId = createdProductId.Value,
@@ -253,9 +253,12 @@ app.MapPost("/generateProduct", async (HttpRequest httpRequest ,generateProductR
                                         {
                                             { "style", request.Style },
                                             { "prompt", request.Prompt }
-                                        }
+                                        },
+                                        Price = Math.Round(newPrice, 2),
+                                        Description = "A product generated with AI based on your prompt.",
+                                        ImageUrl = justImageUrl,
                                     };
-                                    var dbSaveResult = await db.Collection("products").Document(shopProduct.Id).SetAsync(shopProduct);
+                                    var docRef = await db.Collection("products").AddAsync(shopProduct);
                                 }catch (Exception ex)
                                 {
                                     Console.WriteLine("Error saving to Firestore: " + ex.Message);

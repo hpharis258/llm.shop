@@ -4,6 +4,8 @@ import ProductDisplay from './ProductDisplay';
 import {generateProduct} from '../services/productService';
 import { generateProductImage, generateProductTitle } from '../services/geminiService';
 import { useCart } from './contexts';
+import { useAuth } from './contexts';
+
 
 const CreatePage: React.FC = () => {
   const [prompt, setPrompt] = useState('');
@@ -14,10 +16,15 @@ const CreatePage: React.FC = () => {
   
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [generatedTitle, setGeneratedTitle] = useState<string | null>(null);
-  
+  const { isLoggedIn } = useAuth();
   const { addToCart } = useCart();
 
   const handleGenerate = async (currentPrompt: string) => {
+    if(!isLoggedIn) {
+      window.location.href = '/login';
+      return;
+    }
+
     if (!currentPrompt.trim()) return;
 
     setIsLoading(true);

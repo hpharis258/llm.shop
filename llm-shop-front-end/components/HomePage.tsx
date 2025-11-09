@@ -1,33 +1,40 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 // Fix: Correct the import path for the Page type.
 import { Page } from '../types';
 import { PencilIcon, SparklesIcon, ShoppingBagIcon } from './Icons';
+import { fetchProducts, type ProductWithTitle } from '../services/fireStoreService';
 
 interface HomePageProps {
   onNavigate: (page: Page) => void;
 }
 
-const exampleProducts = [
-    {
-        title: "Cosmic Cat Astronaut Mug",
-        description: "A cartoon mug of a cat in an astronaut helmet floating in space.",
-    },
-    {
-        title: "Steampunk Corgi T-Shirt",
-        description: "A realistic t-shirt graphic of a Corgi wearing steampunk goggles and a top hat."
-    },
-    {
-        title: "Watercolor Jellyfish Phone Case",
-        description: "A phone case with a beautiful watercolor painting of a translucent jellyfish."
-    },
-    {
-        title: "Synthwave Sunset Tote Bag",
-        description: "A tote bag featuring a vibrant synthwave-style sunset with a grid landscape."
-    },
-].map(p => ({...p, imageUrl: `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300"><rect width="100%" height="100%" fill="%23475569" /><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="20px" fill="%23e2e8f0" text-anchor="middle">${p.description}</text></svg>`}));
-
-
 const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
+  const [products, setProducts] = useState<ProductWithTitle[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const items = await fetchProducts(4);
+        console.log('Fetched products:', items);
+        if (mounted) setProducts(items);
+      } catch (e: any) {
+        if (mounted) setErr(e?.message ?? 'Failed to load products');
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
+
+  const placeholder = (text: string) =>
+    `data:image/svg+xml;utf8,` +
+    encodeURIComponent(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300"><rect width="100%" height="100%" fill="#475569"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="16px" fill="#e2e8f0">${text}</text></svg>`
+    );
+
   return (
     <div className="space-y-20 sm:space-y-28 animate-fade-in">
       {/* Hero Section */}
@@ -87,14 +94,27 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
       {/* Showcase Section */}
       <div>
         <h2 className="text-3xl font-extrabold text-center text-slate-900 dark:text-white mb-12">
-          Creations From Our Community
+         Latest Creations From Our Community
         </h2>
+
+        {err && (
+          <p className="text-center text-sm text-red-500">{err}</p>
+        )}
+
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {exampleProducts.map((product, index) => (
-            <div key={index} className="aspect-w-1 aspect-h-1 rounded-lg overflow-hidden shadow-lg border border-slate-200 dark:border-slate-700">
-              <img src={product.imageUrl} alt={product.title} className="w-full h-full object-cover" />
-            </div>
-          ))}
+          {(loading ? Array.from({ length: 4 }) : products).map((p: any, idx: number) => {
+            const title = loading ? 'Loading…' : (p.title || p.name || 'Product');
+            const src = loading
+              ? placeholder('Loading…')
+              : (p.printfulMockupUrl
+ || placeholder(title));
+            const key = loading ? idx : p.id || idx;
+            return (
+              <div key={key} className="aspect-w-1 aspect-h-1 rounded-lg overflow-hidden shadow-lg border border-slate-200 dark:border-slate-700">
+                <img src={src} alt={title} className="w-full h-full object-cover" />
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
