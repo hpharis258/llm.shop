@@ -18,7 +18,7 @@ const ProductGenerator: React.FC<ProductGeneratorProps> = ({ prompt, setPrompt, 
   };
 
   return (
-    <div className="bg-white dark:bg-slate-800/50 p-6 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700">
+    <div className="ml-40 mr-40 bg-white dark:bg-slate-800/50 p-6 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700">
       <form onSubmit={handleSubmit}>
         <div>
             <label htmlFor="product-prompt" className="block text-lg font-medium text-slate-700 dark:text-slate-300 mb-2">
@@ -27,7 +27,7 @@ const ProductGenerator: React.FC<ProductGeneratorProps> = ({ prompt, setPrompt, 
             <textarea
             id="product-prompt"
             rows={3}
-            className="w-full p-3 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-[var(--color-primary-500)] focus:border-[var(--color-primary-500)] transition duration-150 ease-in-out text-base placeholder-slate-400 dark:placeholder-slate-500"
+            className="w-full  dark:text-white p-3 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-[var(--color-primary-500)] focus:border-[var(--color-primary-500)] transition duration-150 ease-in-out text-base placeholder-slate-400 dark:placeholder-slate-500"
             placeholder="e.g., a red cup with santa claus riding a skateboard..."
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}

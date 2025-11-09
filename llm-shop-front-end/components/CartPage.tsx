@@ -68,6 +68,7 @@ const CartPage: React.FC<CartPageProps> = ({ onNavigate }) => {
           <div className="mt-6">
             <button
               className="w-full inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-[var(--color-primary-600)] hover:bg-[var(--color-primary-700)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary-500)]"
+              onClick={() => onNavigate('checkout')}
             >
               Checkout
             </button>

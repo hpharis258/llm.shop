@@ -60,7 +60,7 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
         <h2 className="text-3xl font-extrabold text-center text-slate-900 dark:text-white mb-12">
           As Easy As One, Two, Three
         </h2>
-        <div className="grid md:grid-cols-3 gap-10">
+        <div className="grid dark:text-white md:grid-cols-3 gap-10">
           <div className="text-center">
             <div className="flex items-center justify-center h-16 w-16 rounded-full bg-[var(--color-primary-100)] dark:bg-[var(--color-primary-900-50)] mx-auto mb-4">
               <PencilIcon className="w-8 h-8 text-[var(--color-primary-600)] dark:text-[var(--color-primary-400)]" />

@@ -43,7 +43,7 @@ const ProductDisplay: React.FC<ProductDisplayProps> = ({ imageUrl, title, isLoad
   }
 
   return (
-    <div className="bg-white dark:bg-slate-800/50 p-6 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 animate-fade-in">
+    <div className=" ml-40 mr-40 bg-white dark:bg-slate-800/50 p-6 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 animate-fade-in">
       <h2 className="text-3xl font-extrabold text-center text-slate-900 dark:text-white mb-6">Your Creation is Ready!</h2>
       <div className="grid md:grid-cols-2 gap-8 items-center">
         <div className="aspect-w-1 aspect-h-1 rounded-lg overflow-hidden border border-slate-300 dark:border-slate-600">

@@ -1,4 +1,13 @@
-export type Page = 'home' | 'create' | 'popular' | 'about' | 'settings' | 'login' | 'cart' | 'signup';
+export type Page =
+  | 'home'
+  | 'create'
+  | 'popular'
+  | 'about'
+  | 'cart'
+  | 'login'
+  | 'signup'
+  | 'settings'
+  | 'checkout';
 
 export interface Product {
   title: string;

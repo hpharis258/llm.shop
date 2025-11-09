@@ -11,6 +11,7 @@ import HomePage from './components/HomePage';
 import SignUp from './components/SignUpPage';
 import { useAuth } from './components/contexts';
 import { Page } from './types';
+import CheckoutPage from './components/checkoutPage';
 
 function AppLayout() {
   const [page, setPage] = useState<Page>('home');
@@ -29,7 +30,8 @@ function AppLayout() {
       '/settings': 'settings',
       '/login': 'login',
       '/signup': 'signup',
-      '/cart': 'cart'
+      '/cart': 'cart',
+      '/checkout': 'checkout'
     };
     setPage(pathToPage[location.pathname] || 'home');
   }, [location]);
@@ -63,29 +65,29 @@ function AppLayout() {
   };
 
   return (
-    <div className="bg-slate-50 dark:bg-slate-900 min-h-screen text-slate-900 dark:text-slate-100 font-sans transition-colors duration-300">
+    <div className="min-h-screen flex flex-col">
       <Header page={page} setPage={navigate} onLogout={handleLogout} />
-      <main className="max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        <Routes>
-          <Route path="/" element={<HomePage onNavigate={navigate} />} />
-          <Route path="/create" element={<CreatePage />} />
-          <Route path="/popular" element={<PopularProductsPage />} />
-          <Route path="/about" element={<AboutPage />} />
-          <Route 
-            path="/settings" 
-            element={isLoggedIn ? <SettingsPage /> : <LoginPage onLogin={handleLogin} reason="Please sign in to access settings" onNavigate={navigate} />} 
-          />
-          <Route 
-            path="/login" 
-            element={<LoginPage onLogin={handleLogin} reason={redirectPage === 'cart' ? "Please sign in to view your cart." : undefined} onNavigate={navigate} />} 
-          />
-          <Route path="/signup" element={<SignUp onLogin={handleLogin} onNavigate={navigate} />} />
-          <Route 
-            path="/cart" 
-            element={isLoggedIn ? <CartPage onNavigate={navigate} /> : <LoginPage onLogin={handleLogin} reason="Please sign in to view your cart" onNavigate={navigate} />} 
-          />
-          <Route path="*" element={<div>Page not found</div>} />
-        </Routes>
+      <main className="flex-1 px-4 py-8">
+        {page === 'home' && <HomePage onNavigate={navigate} />}
+        {page === 'create' && <CreatePage />}
+        {page === 'popular' && <PopularProductsPage />}
+        {page === 'about' && <AboutPage />}
+        {page === 'cart' && <CartPage onNavigate={navigate} />}
+        {page === 'settings' && <SettingsPage />}
+        {page === 'login' && <LoginPage onNavigate={navigate} onLogin={() => setPage('home')} />}
+        {page === 'signup' && <SignUp onNavigate={navigate} onSignUp={() => setPage('home')} />}
+        {page === 'checkout' && <CheckoutPage setPage={setPage} />}
+        {!(page === 'home' ||
+           page === 'create' ||
+           page === 'popular' ||
+           page === 'about' ||
+           page === 'cart' ||
+           page === 'settings' ||
+           page === 'login' ||
+           page === 'signup' ||
+           page === 'checkout') && (
+             <p className="text-center text-sm text-red-500">Page not found.</p>
+        )}
       </main>
     </div>
   );
