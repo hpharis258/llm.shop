@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { UserIcon, LockIcon } from './Icons';
 import { Page } from '../types';
-import { signIn, signInWithGoogle } from '../auth/firebaseClient';
+import { signIn, signInWithGoogle, resetPassword } from '../auth/firebaseClient';
 
 interface LoginPageProps {
     onLogin: () => void;
@@ -14,6 +14,10 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, reason, onNavigate }) =>
     const [password, setPassword] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [resetOpen, setResetOpen] = useState(false);
+    const [resetEmail, setResetEmail] = useState('');
+    const [resetMsg, setResetMsg] = useState<string | null>(null);
+    const [resetLoading, setResetLoading] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -35,7 +39,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, reason, onNavigate }) =>
     };
 
     const handleGoogleSignUp = async () => {
-            // Placeholder for Google Sign-Up logic
+
             console.log("Google Sign-Up clicked");
               setError(null);
             setIsLoading(true);
@@ -113,31 +117,97 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, reason, onNavigate }) =>
                         >
                             {isLoading ? 'Signing in...' : 'Sign In'}
                         </button>
+
                         <div className="mt-2 text-center">
                             <button
                                 onClick={() => window.location.href = '/signup'}
                                 className="text-[var(--color-primary-600)] hover:text-[var(--color-primary-700)] font-medium"
+                                type="button"
                             >
                                 Create an account
                             </button>
                         </div>
-                          <div className="mt-2 text-center">
-                         or
+
+                        <div className="mt-2 text-center">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setResetOpen((v) => !v);
+                                    setResetMsg(null);
+                                    setResetEmail((prev) => prev || email);
+                                }}
+                                className="text-sm text-slate-600 dark:text-slate-300 hover:underline"
+                            >
+                                Forgot password?
+                            </button>
                         </div>
-                          <div className="mt-2">
-                        <button
-                            onClick={() => handleGoogleSignUp()}
-                            type="button"
-                            className="w-full inline-flex items-center justify-center px-4 py-3 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-100 text-[var(--color-primary-600)] hover:bg-slate-50 dark:hover:bg-slate-300 rounded-md shadow-sm font-medium transition"
-                        >
-                            <img
-                                src={'../images/google.png'}
-                                alt="Google logo"
-                                className="h-5 w-5 mr-3 hv:bg-slate-300 rounded-full"
-                            />
-                            <span>Sign in with Google</span>
-                        </button>
-                    </div>
+
+                        {resetOpen && (
+                            <div className="mt-3 p-3 rounded-md bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700">
+                                {resetMsg && (
+                                    <div className="mb-2 text-sm text-emerald-700 dark:text-emerald-300">
+                                        {resetMsg}
+                                    </div>
+                                )}
+                                <label htmlFor="resetEmail" className="block text-sm font-medium text-slate-400 white:text-slate-600">
+                                    Email address
+                                </label>
+                                <input
+                                    id="resetEmail"
+                                    type="email"
+                                    value={resetEmail}
+                                    onChange={(e) => setResetEmail(e.target.value)}
+                                    className="mt-1 w-full p-3 bg-slate-100 white:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-[var(--color-primary-500)] focus:border-[var(--color-primary-500)] transition"
+                                    placeholder="your@email.com"
+                                />
+                                <div className="mt-3 flex gap-2">
+                                    <button
+                                        type="button"
+                                        disabled={!resetEmail || resetLoading}
+                                        onClick={async () => {
+                                            setResetLoading(true);
+                                            setResetMsg(null);
+                                            const res = await resetPassword(resetEmail);
+                                            setResetLoading(false);
+                                            setResetMsg(
+                                                res.ok
+                                                    ? 'Password reset email sent. Check your inbox.'
+                                                    : res.error || 'Failed to send reset email.'
+                                            );
+                                        }}
+                                        className="inline-flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium text-white bg-[var(--color-primary-600)] hover:bg-[var(--color-primary-700)] disabled:opacity-50"
+                                    >
+                                        {resetLoading ? 'Sending…' : 'Send reset link'}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => { setResetOpen(false); setResetMsg(null); }}
+                                        className="px-4 py-2 rounded-md text-sm font-medium text-slate-700 dark:text-slate-200 hover:underline"
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="mt-4 text-center">
+                            or
+                        </div>
+
+                        <div className="mt-2">
+                            <button
+                                onClick={() => handleGoogleSignUp()}
+                                type="button"
+                                className="w-full inline-flex items-center justify-center px-4 py-3 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-100 text-[var(--color-primary-600)] hover:bg-slate-50 dark:hover:bg-slate-300 rounded-md shadow-sm font-medium transition"
+                            >
+                                <img
+                                    src={'../images/google.png'}
+                                    alt="Google logo"
+                                    className="h-5 w-5 mr-3 hv:bg-slate-300 rounded-full"
+                                />
+                                <span>Sign in with Google</span>
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>

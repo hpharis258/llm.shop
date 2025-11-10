@@ -1,6 +1,9 @@
 import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import { BaseTheme, AccentColor, Product, CartItem } from '../types';
 import { signOutUser } from '../auth/firebaseClient';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { auth } from '../auth/firebaseClient';
+
 // --- Theme Context ---
 interface ThemeContextType {
   baseTheme: BaseTheme;
@@ -79,42 +82,48 @@ export const useTheme = () => {
 };
 
 // --- Auth Context ---
-interface AuthContextType {
+interface AuthCtx {
+  user: any | null;
   isLoggedIn: boolean;
-  login: () => void;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthCtx | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => !!localStorage.getItem('isLoggedIn'));
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<any | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const login = () => {
-    localStorage.setItem('isLoggedIn', 'true');
-    setIsLoggedIn(true);
-  };
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (u) => {
+      setUser(u);
+      setLoading(false);
+    });
+    return () => unsub();
+  }, []);
 
-  const logout = () => {
-    localStorage.removeItem('isLoggedIn');
-    setIsLoggedIn(false);
-    var result = signOutUser();
-    console.log('User logged out', result);
+  const logout = async () => {
+    await signOut(auth);
+    setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, login, logout }}>
-      {children}
+    <AuthContext.Provider
+      value={{
+        user,
+        isLoggedIn: !!user,
+        logout
+      }}
+    >
+      {!loading && children}
     </AuthContext.Provider>
   );
 };
 
 export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
+  return ctx;
 };
 
 // --- Cart Context ---

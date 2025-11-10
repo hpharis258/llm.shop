@@ -1,6 +1,6 @@
 // firebaseClient.ts
 import { initializeApp } from "firebase/app";
-import {signOut, getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, GoogleAuthProvider, signInWithPopup} from "firebase/auth";
+import {signOut, getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail } from "firebase/auth";
 
 // Vite exposes env vars via import.meta.env and requires a VITE_ prefix for client-visible variables.
 // Ensure your .env.local contains VITE_FIREBASE_API_KEY, VITE_AUTH_DOMAIN, VITE_PROJECT_ID, VITE_STORAGE_BUCKET, etc.
@@ -152,4 +152,18 @@ export async function signOutUser() {
     return { success: false, error: err?.message || 'sign_out_failed' };
   }
 }
-// .
+
+export async function resetPassword(email: string): Promise<{ ok: boolean; error?: string }> {
+  try {
+    await sendPasswordResetEmail(auth, email);
+    return { ok: true };
+  } catch (e: any) {
+    const msg =
+      e?.code === 'auth/user-not-found'
+        ? 'No user found with that email.'
+        : e?.code === 'auth/invalid-email'
+        ? 'Invalid email address.'
+        : 'Could not send reset email. Please try again.';
+    return { ok: false, error: msg };
+  }
+}
