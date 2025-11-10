@@ -4,6 +4,7 @@ export interface GeneratedProduct {
   imageUrl: string;
   title: string;
   description?: string;
+  price?: string;
 }
 
 export const generateProduct = async (prompt: string, style: string): Promise<GeneratedProduct> => {
@@ -28,7 +29,7 @@ export const generateProduct = async (prompt: string, style: string): Promise<Ge
 
         const data = await response.json();
         console.log("data", data);
-        return { imageUrl: data.image, title: data.title, description: data.description };
+        return { imageUrl: data.image, title: data.title, description: data.description, price: data.price };
 
     } catch (error) {
         console.error("Error generating image:", error);

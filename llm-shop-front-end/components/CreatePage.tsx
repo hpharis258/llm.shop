@@ -17,6 +17,7 @@ const CreatePage: React.FC = () => {
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [generatedTitle, setGeneratedTitle] = useState<string | null>(null);
   const [generatedDescription, setGeneratedDescription] = useState<string | null>(null);
+  const [generatedPrice, setGeneratedPrice] = useState<string | null>(null);
   const { isLoggedIn } = useAuth();
   const { addToCart } = useCart();
 
@@ -34,11 +35,12 @@ const CreatePage: React.FC = () => {
     setGeneratedTitle(null);
 
     try {
-      const { imageUrl, title, description } = await generateProduct(currentPrompt, selectedStyle);
-      console.log("Generated product:", { imageUrl, title, generatedDescription });
+      const { imageUrl, title, description, price } = await generateProduct(currentPrompt, selectedStyle);
+      console.log("Generated product:", { imageUrl, title, generatedDescription, price });
       setGeneratedImage(imageUrl);
       setGeneratedTitle(title);
       setGeneratedDescription(description);
+      setGeneratedPrice(price);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An unknown error occurred.");
     } finally {
@@ -72,6 +74,7 @@ const CreatePage: React.FC = () => {
           onStartOver={handleStartOver}
           onAddToCart={addToCart}
           description={generatedDescription}
+          price={generatedPrice}
         />
       )}
     </div>

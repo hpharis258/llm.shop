@@ -12,14 +12,14 @@ interface ProductDisplayProps {
   description?: string;
 }
 
-const ProductDisplay: React.FC<ProductDisplayProps> = ({ imageUrl, title, isLoading, error, onStartOver, onAddToCart, description }) => {
+const ProductDisplay: React.FC<ProductDisplayProps> = ({ imageUrl, title, isLoading, error, onStartOver, onAddToCart, description, price }) => {
   if (isLoading) {
     return <LoadingSpinner />;
   }
 
   if (error) {
     return (
-      <div className="text-center p-8 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-xl">
+      <div className="text-center ml-40 mr-40 p-8 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-xl">
         <h3 className="text-2xl font-bold text-red-800 dark:text-red-200">Oh no! Something went wrong.</h3>
         <p className="mt-2 text-red-600 dark:text-red-300">{error}</p>
         <button
@@ -39,7 +39,7 @@ const ProductDisplay: React.FC<ProductDisplayProps> = ({ imageUrl, title, isLoad
   const product: Product = {
       title,
       imageUrl,
-      price: "29.99"
+      price: price
   }
 
   return (

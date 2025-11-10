@@ -55,6 +55,7 @@ app.MapPost("/generateProduct", async (HttpRequest httpRequest ,generateProductR
         var authHeader = httpRequest.Headers["Authorization"].FirstOrDefault();
         var uploadUserId = "";
         var justImageUrl = "";
+        var returnPrice = "";
         if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
         {
             return Results.Unauthorized();
@@ -260,6 +261,57 @@ app.MapPost("/generateProduct", async (HttpRequest httpRequest ,generateProductR
                                         ImageUrl = justImageUrl,
                                     };
                                     var docRef = await db.Collection("products").AddAsync(shopProduct);
+                                    returnPrice = Math.Round(newPrice, 2).ToString("F2");
+                                    // Create product in shopify...
+                                    var shopifyClient = new HttpClient();
+                                    var shopifyDomain =  builder.Configuration["ShopifyDomain"];
+                                    var shopifyToken = builder.Configuration["ShopifyAPIKey"];
+                                    shopifyClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("X-Shopify-Access-Token", shopifyToken);
+
+                                    var url = $"{shopifyDomain}/admin/api/2025-01/products.json";
+                                    
+                                    var productData = new
+                                    {
+                                        product = new
+                                        {
+                                            title = separation.title,
+                                            body_html = separation.description,
+                                            vendor = "YourChoice Market",
+                                            product_type = separation.product,
+                                            tags = new[] { "unisex" },
+                                            options = new[]
+                                            {
+                                                new { name = "Size", values = new[] { "Small", "Medium" } }
+                                            },
+                                            variants = new[]
+                                            {
+                                                new { option1 = "Small", price = "19.99", sku = "TSHIRT-SM" },
+                                                new { option1 = "Medium", price = "19.99", sku = "TSHIRT-MD" }
+                                            },
+                                            images = new[]
+                                            {
+                                                new { src = mockupUrl  }
+                                            },
+                                            metafields = new[]
+                                            {
+                                                new
+                                                {
+                                                    key = "printful_product_id",
+                                                    value = createdProductId.Value,  
+                                                    type = "single_line_text_field"
+                                                }
+                                            }
+                                        }
+                                    };
+                                    
+                                    var jsonProd = JsonSerializer.Serialize(productData);
+                                    
+                                    var content = new StringContent(jsonProd, System.Text.Encoding.UTF8, "application/json");
+
+                                    var shopifyCreateResponse = await shopifyClient.PostAsync(url, content);
+                                    var body = await shopifyCreateResponse.Content.ReadAsStringAsync();
+
+                                    
                                 }catch (Exception ex)
                                 {
                                     Console.WriteLine("Error saving to Firestore: " + ex.Message);
@@ -283,7 +335,7 @@ app.MapPost("/generateProduct", async (HttpRequest httpRequest ,generateProductR
      
 
         // 4. Return or use it
-        return Results.Ok(new { image = returnImage, title = separation.title, description = separation.description });
+        return Results.Ok(new { image = returnImage, title = separation.title, description = separation.description, price = returnPrice });
     })
     .WithName("GenerateProduct")
     .WithOpenApi();

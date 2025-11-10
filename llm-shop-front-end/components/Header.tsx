@@ -23,9 +23,10 @@ const NavLink: React.FC<{
             onClick={() => setPage(pageName)}
             className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                 isActive
-                ? 'bg-[var(--color-primary-100)] dark:bg-[var(--color-primary-900-50)] text-[var(--color-primary-600)] dark:text-[var(--color-primary-300)]'
+                ? 'bg-[var(--color-primary-600)] text-white dark:bg-[var(--color-primary-500)]'
                 : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
             } ${className}`}
+            aria-current={isActive ? 'page' : undefined}
         >
             {children}
         </button>
