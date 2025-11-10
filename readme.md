@@ -45,4 +45,4 @@ Users can add the product to their cart and check out. Payment and fulfillment s
 ---
 
 ## 🧩 Architecture Diagram
-![Architecture Diagram]([https://github.com/hpharis258/llm.shop/blob/main/Screenshot%202025-10-26%20at%2020.29.03.png]))
+![Architecture Diagram](https://github.com/hpharis258/llm.shop/blob/main/Screenshot%202025-10-26%20at%2020.29.03.png)
