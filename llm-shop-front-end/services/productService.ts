@@ -6,6 +6,7 @@ export interface GeneratedProduct {
   description?: string;
   price?: string;
 }
+var backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5275';
 
 export const generateProduct = async (prompt: string, style: string): Promise<GeneratedProduct> => {
     try {
@@ -14,7 +15,7 @@ export const generateProduct = async (prompt: string, style: string): Promise<Ge
         const auth = getAuth();
         const token = await auth.currentUser?.getIdToken();
 
-        const response = await fetch('http://localhost:5275/generateProduct', {
+        const response = await fetch(`${backendUrl}generateProduct`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

@@ -146,14 +146,23 @@ app.MapPost("/generateProduct", async (HttpRequest httpRequest ,generateProductR
                 })?.Result ?? new List<ProductJSON>();
             
             // Generate product image
-            var imageGenerateResponse = await client.Models.GenerateImagesAsync(
-                model: "imagen-3.0-generate-002",
-                prompt: separation.imagePrompt + " in the style of " + request.Style
-            );
-            var imageBytes = imageGenerateResponse.GeneratedImages.FirstOrDefault()?.Image?.ImageBytes;
-            var firebaseService = new FirebaseStorageService();
-            var imageUrl = await firebaseService.UploadImageAsync(imageBytes, $"{uploadUserId}/product_{Guid.NewGuid()}.png");
-            justImageUrl = imageUrl;
+            try
+            {
+                var imageGenerateResponse = await client.Models.GenerateImagesAsync(
+                    model: "models/imagen-4.0-generate-001",
+                    prompt: separation.imagePrompt + " in the style of " + request.Style
+                );
+                var imageBytes = imageGenerateResponse.GeneratedImages.FirstOrDefault()?.Image?.ImageBytes;
+                var firebaseService = new FirebaseStorageService();
+                var imageUrl = await firebaseService.UploadImageAsync(imageBytes, $"{uploadUserId}/product_{Guid.NewGuid()}.png");
+                justImageUrl = imageUrl;
+            }
+            catch(Exception ex)
+            {
+                //var models = client.Models.GenerateImagesAsync().;
+                var debug = ex.Message;
+            }
+          
             
             // pick first product for now
             var selectedProduct = products.FirstOrDefault();
@@ -195,7 +204,7 @@ app.MapPost("/generateProduct", async (HttpRequest httpRequest ,generateProductR
                                         {
                                             new
                                             {
-                                                url = imageUrl
+                                                url = justImageUrl
                                             }
                                         }
                                     }
@@ -221,7 +230,7 @@ app.MapPost("/generateProduct", async (HttpRequest httpRequest ,generateProductR
                                             new
                                             {
                                                 placement = "front",
-                                                image_url = imageUrl,
+                                                image_url = justImageUrl,
                                                 position = new
                                                 {
                                                     area_width = 1800,
