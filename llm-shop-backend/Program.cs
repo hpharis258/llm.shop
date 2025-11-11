@@ -12,6 +12,10 @@ using llm_shop_backend.services;
 var builder = WebApplication.CreateBuilder(args);
 var geminiKey = builder.Configuration["GeminiAPIKey"];
 
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+var url = $"http://0.0.0.0:{port}";
+var target = Environment.GetEnvironmentVariable("TARGET") ?? "World";
+
 builder.Services.AddEndpointsApiExplorer(); // required for minimal APIs
 builder.Services.AddSwaggerGen();
 
@@ -48,6 +52,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.MapGet("/", () => $"Hello {target}!");
 
 app.MapPost("/generateProduct", async (HttpRequest httpRequest ,generateProductRequest request) =>
     {
@@ -341,5 +346,5 @@ app.MapPost("/generateProduct", async (HttpRequest httpRequest ,generateProductR
     .WithOpenApi();
 
 app.UseCors("AllowFrontend");
-app.Run();
+app.Run(url);
 
