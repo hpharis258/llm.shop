@@ -15,11 +15,11 @@ public class FirebaseStorageService
         {
             FirebaseApp.Create(new AppOptions
             {
-                Credential = GoogleCredential.FromFile("firebase/yourchoicemarket-c63a3-firebase-adminsdk-fbsvc-f8a80b9478.json")
+                Credential = GoogleCredential.FromFile("firebase/yourchoicemarket-c63a3-f5d9805116ce.json")
             });
         }
 
-        _storage = StorageClient.Create(GoogleCredential.FromFile("firebase/yourchoicemarket-c63a3-firebase-adminsdk-fbsvc-f8a80b9478.json"));
+        _storage = StorageClient.Create(GoogleCredential.FromFile("firebase/yourchoicemarket-c63a3-f5d9805116ce.json"));
     }
 
     public async Task<string> UploadImageAsync(byte[] imageBytes, string fileName)

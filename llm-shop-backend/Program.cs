@@ -6,13 +6,19 @@ using Google.Apis.Auth.OAuth2;
 using llm_shop_backend.data;
 using System.Net.Http.Headers;
 using Google.Cloud.Firestore;
+using Google.GenAI.Types;
 using llm_shop_backend;
 using llm_shop_backend.services;
+using Environment = System.Environment;
 
 var builder = WebApplication.CreateBuilder(args);
 var geminiKey = builder.Configuration["GeminiAPIKey"];
 
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(int.Parse(port)); // Listen on all interfaces
+});
 var url = $"http://0.0.0.0:{port}";
 var target = Environment.GetEnvironmentVariable("TARGET") ?? "World";
 
@@ -26,15 +32,29 @@ builder.Services.AddCors(options =>
         "http://localhost:3000").AllowAnyHeader().AllowAnyMethod());
 });
 
+var firebaseJsonPath = Environment.GetEnvironmentVariable("FIREBASE_KEY_PATH") 
+                       ?? "firebase/yourchoicemarket-c63a3-f5d9805116ce.json";
+
+if (string.IsNullOrEmpty(firebaseJsonPath))
+{
+    throw new Exception("FIREBASE_KEY_PATH environment variable is not set.");
+}
+
+GoogleCredential cred;
+using (var stream = new FileStream(firebaseJsonPath, FileMode.Open, FileAccess.Read))
+{
+    cred = GoogleCredential.FromStream(stream);
+}
+
 var firebase = FirebaseApp.Create(new AppOptions()
 {
-    Credential = GoogleCredential.FromFile("firebase/yourchoicemarket-c63a3-firebase-adminsdk-fbsvc-f8a80b9478.json")
+    Credential = cred
 });
 
 FirestoreDb db = new FirestoreDbBuilder
 {
     ProjectId = "yourchoicemarket-c63a3",
-    Credential = GoogleCredential.FromFile("firebase/yourchoicemarket-c63a3-firebase-adminsdk-fbsvc-f8a80b9478.json")
+    Credential = cred
 }.Build();
 
 var app = builder.Build();
@@ -87,10 +107,21 @@ app.MapPost("/generateProduct", async (HttpRequest httpRequest ,generateProductR
         }
         var returnImage = "";
         var client = new Client(apiKey: geminiKey);
+        GenerateContentResponse response;
+        try
+        {
+            var resp = await client.Models.GenerateContentAsync(
+                model: "gemini-2.5-flash", contents: "Your task is to figure out what product does the user want to generate and what image should be generated based on the following prompt, If the input prompt does not contain a product return cap as the product -> PROMPT:  " + request.Prompt + " the Image Prompt Response SHOULD NOT contain the product itself. Also generate product Title and Description. Respond **only** in valid JSON do not include markdown or explanations Example format: {{'product': 'cup', 'imagePrompt': 'a santa on a red background with a reindeer', title; 'Christmas cup', 'description': 'A festive cup for the holiday season.'}}"
+            );
+            response = resp;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
         //  Gemini Developer API
-        var response = await client.Models.GenerateContentAsync(
-            model: "gemini-2.5-flash", contents: "Your task is to figure out what product does the user want to generate and what image should be generated based on the following prompt, If the input prompt does not contain a product return cap as the product -> PROMPT:  " + request.Prompt + " the Image Prompt Response SHOULD NOT contain the product itself. Also generate product Title and Description. Respond **only** in valid JSON do not include markdown or explanations Example format: {{'product': 'cup', 'imagePrompt': 'a santa on a red background with a reindeer', title; 'Christmas cup', 'description': 'A festive cup for the holiday season.'}}"
-        );
+     
         var text = response.Candidates[0].Content.Parts[0].Text.Trim();
 
         // Remove Markdown code fences if Gemini included them
@@ -355,5 +386,5 @@ app.MapPost("/generateProduct", async (HttpRequest httpRequest ,generateProductR
     .WithOpenApi();
 
 app.UseCors("AllowFrontend");
-app.Run(url);
+app.Run();
 
