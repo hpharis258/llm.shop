@@ -15,10 +15,6 @@ var builder = WebApplication.CreateBuilder(args);
 var geminiKey = builder.Configuration["GeminiAPIKey"];
 
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-// builder.WebHost.ConfigureKestrel(options =>
-// {
-//     options.ListenAnyIP(int.Parse(port)); // Listen on all interfaces
-// });
 var url = $"http://0.0.0.0:{port}";
 var target = Environment.GetEnvironmentVariable("TARGET") ?? "World";
 
@@ -29,8 +25,7 @@ builder.Services.AddOpenApi();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", builder => builder.WithOrigins(
-        "http://localhost:3000").AllowAnyHeader().AllowAnyMethod());
-    options.AddPolicy("AllowProductionFrontend", builder => builder.WithOrigins(
+        "http://localhost:3000", 
         "https://www.yourchoicemarket.com").AllowAnyHeader().AllowAnyMethod());
 });
 
