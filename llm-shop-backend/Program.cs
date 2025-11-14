@@ -15,10 +15,10 @@ var builder = WebApplication.CreateBuilder(args);
 var geminiKey = builder.Configuration["GeminiAPIKey"];
 
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-builder.WebHost.ConfigureKestrel(options =>
-{
-    options.ListenAnyIP(int.Parse(port)); // Listen on all interfaces
-});
+// builder.WebHost.ConfigureKestrel(options =>
+// {
+//     options.ListenAnyIP(int.Parse(port)); // Listen on all interfaces
+// });
 var url = $"http://0.0.0.0:{port}";
 var target = Environment.GetEnvironmentVariable("TARGET") ?? "World";
 
@@ -386,5 +386,5 @@ app.MapPost("/generateProduct", async (HttpRequest httpRequest ,generateProductR
     .WithOpenApi();
 
 app.UseCors("AllowFrontend");
-app.Run();
+app.Run(url);
 

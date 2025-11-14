@@ -18,5 +18,4 @@ RUN dotnet publish "./llm-shop-backend.csproj" -c $BUILD_CONFIGURATION -o /app/p
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-COPY firebase/yourchoicemarket-c63a3-firebase-adminsdk-fbsvc-f8a80b9478.json /app/firebase/yourchoicemarket-c63a3-firebase-adminsdk-fbsvc-f8a80b9478.json
 ENTRYPOINT ["dotnet", "llm-shop-backend.dll"]
